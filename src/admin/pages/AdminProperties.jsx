@@ -352,6 +352,7 @@ export default function AdminProperties() {
                 <div>
                   <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="block w-full text-sm text-navy-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-navy-900 file:text-white hover:file:bg-navy-800" />
                   {uploading && <p className="text-sm text-navy-500 mt-2 font-medium">Uploading...</p>}
+                  {uploadError && <p className="text-sm text-red-600 mt-2 font-medium">{uploadError}</p>}
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {formData.images.map((img, index) => (
