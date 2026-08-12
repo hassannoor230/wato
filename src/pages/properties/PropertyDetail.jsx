@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../admin/context/AdminContext';
 
@@ -6,25 +6,49 @@ export default function PropertyDetail() {
   const { slug } = useParams();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
+  const apiRef = useRef(api);
+  apiRef.current = api;
 
-  useEffect(() => {
-    async function fetchProperty() {
+  const fetchProperty = useCallback(() => {
+    const controller = new AbortController();
+    let cancelled = false;
+
+    async function doFetch() {
       setLoading(true);
+      setError('');
       try {
-        const response = await api.get(`/properties/${slug}`);
-        setProperty(response.data.data);
-        if (response.data.data.images?.length > 0) {
-          setSelectedImage(0);
+        const response = await apiRef.current.get(`/properties/${slug}`, { signal: controller.signal });
+        if (!cancelled) {
+          setProperty(response.data.data);
+          if (response.data.data.images?.length > 0) {
+            setSelectedImage(0);
+          }
         }
       } catch (error) {
-        console.error('Failed to fetch property:', error);
+        if (!controller.signal.aborted && !cancelled) {
+          console.error('Failed to fetch property:', error);
+          setError('Unable to load property details. Please try again later.');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
-    fetchProperty();
-  }, [slug, api]);
+
+    doFetch();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [slug]);
+
+  useEffect(() => {
+    const cleanup = fetchProperty();
+    return cleanup;
+  }, [fetchProperty]);
 
   if (loading) {
     return (
@@ -34,11 +58,24 @@ export default function PropertyDetail() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-navy-900 mb-4">Something went wrong</h1>
+          <p className="text-navy-500 mb-6">{error}</p>
+          <Link to="/properties" className="btn-primary">View All Properties</Link>
+        </div>
+      </div>
+    );
+  }
+
   if (!property) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-navy-900 mb-4">Property Not Found</h1>
+          <p className="text-navy-500 mb-6">The property you are looking for does not exist or has been removed.</p>
           <Link to="/properties" className="btn-primary">View All Properties</Link>
         </div>
       </div>
@@ -50,13 +87,16 @@ export default function PropertyDetail() {
   return (
     <div className="min-h-screen bg-white">
       <section className="bg-navy-50/40 border-b border-navy-100">
-        <div className="container-premium py-8">
-          <nav className="flex items-center gap-2 text-sm text-navy-500 mb-4">
-            <Link to="/" className="hover:text-navy-900">Home</Link>
-            <span>/</span>
-            <Link to="/properties" className="hover:text-navy-900">Properties</Link>
-            <span>/</span>
-            <span className="text-navy-900 font-medium truncate">{property.title}</span>
+        <div className="container-premium pt-24 pb-8">
+          <nav className="flex items-center justify-between gap-2 text-sm text-navy-500 mb-4">
+            <div className="flex items-center gap-2">
+              <Link to="/" className="hover:text-navy-900">Home</Link>
+              <span>/</span>
+              <Link to="/properties" className="hover:text-navy-900">Properties</Link>
+              <span>/</span>
+              <span className="text-navy-900 font-medium truncate">{property.title}</span>
+            </div>
+            <Link to="/properties" className="btn-secondary text-xs px-3 py-1.5">View All Properties</Link>
           </nav>
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useBusinessInfo } from '../../hooks/useApi';
 
 export default function AboutPage() {

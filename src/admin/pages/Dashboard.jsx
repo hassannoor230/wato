@@ -5,19 +5,22 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [recentEnquiries, setRecentEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const { api } = useAdmin();
 
   useEffect(() => {
     async function fetchData() {
       try {
+        setError('');
         const [statsRes, enquiriesRes] = await Promise.all([
-          api.get('/settings/dashboard'),
+          api.get('/dashboard/stats'),
           api.get('/enquiries?limit=5&sort=-createdAt'),
         ]);
         setStats(statsRes.data.data);
         setRecentEnquiries(enquiriesRes.data.data || []);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+        setError('Failed to load dashboard data. Please check your connection and try again.');
       } finally {
         setLoading(false);
       }
@@ -50,8 +53,13 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-8">
-      <div>
+      <div className="space-y-8">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+            {error}
+          </div>
+        )}
+        <div>
         <h2 className="text-3xl font-bold text-navy-900 tracking-tight">Dashboard</h2>
         <p className="text-navy-500 text-sm mt-2 font-medium">Welcome to the admin panel overview.</p>
       </div>

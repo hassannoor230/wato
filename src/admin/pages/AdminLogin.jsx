@@ -23,7 +23,6 @@ export default function AdminLogin() {
 
     try {
       await login(email, password);
-      window.location.href = '/admin';
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {

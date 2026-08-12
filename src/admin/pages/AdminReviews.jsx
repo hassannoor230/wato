@@ -1,28 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '../context/AdminContext';
 
 export default function AdminReviews() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
   const [formData, setFormData] = useState({ name: '', role: 'Client', text: '', rating: 5, status: 'published', verified: false });
 
   const { api } = useAdmin();
 
-  useEffect(() => { fetchReviews(); }, [api]);
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
       const response = await api.get('/reviews/admin');
       setReviews(response.data.data);
     } catch (error) {
       console.error('Failed to fetch reviews:', error);
+      setError('Failed to load reviews. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [api]);
+
+  useEffect(() => { fetchReviews(); }, [fetchReviews]);
 
   const openModal = (review = null) => {
     if (review) {
@@ -64,6 +67,11 @@ export default function AdminReviews() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+          {error}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <p className="text-navy-500 text-sm font-medium">Manage customer reviews</p>
         <button onClick={() => openModal()} className="btn-primary text-sm px-6 py-2.5">+ Add Review</button>

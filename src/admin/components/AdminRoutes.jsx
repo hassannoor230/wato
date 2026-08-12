@@ -2,7 +2,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import { useAdmin } from '../context/AdminContext';
 
-function AdminRoutes({ children }) {
+export default function AdminRoutes() {
   const { isAuthenticated, loading } = useAdmin();
   const location = useLocation();
 
@@ -18,7 +18,5 @@ function AdminRoutes({ children }) {
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
-  return <AdminLayout>{children || <Outlet />}</AdminLayout>;
+  return <AdminLayout><Outlet /></AdminLayout>;
 }
-
-export default AdminRoutes;

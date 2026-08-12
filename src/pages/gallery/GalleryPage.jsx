@@ -46,7 +46,7 @@ export default function GalleryPage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
-              {images.map((image, index) => (
+              {images.map((image) => (
                 <button key={image._id} onClick={() => setSelectedImage(image)} className="group relative aspect-square rounded-2xl overflow-hidden border border-navy-100 hover:shadow-premium-hover transition-all duration-300">
                   <img src={image.image} alt={image.title || image.caption || ''} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
                   <div className="absolute inset-0 bg-navy-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

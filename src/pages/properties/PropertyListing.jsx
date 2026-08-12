@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../admin/context/AdminContext';
 
@@ -10,20 +10,17 @@ export default function PropertyListing() {
   const [listingType, setListingType] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const apiRef = useRef(api);
+  apiRef.current = api;
 
-  useEffect(() => {
-    const timeout = setTimeout(() => { fetchProperties(); }, 300);
-    return () => clearTimeout(timeout);
-  }, [searchQuery, propertyType, listingType, currentPage]);
-
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ status: 'published', limit: 12, page: currentPage });
       if (searchQuery) params.append('search', searchQuery);
       if (propertyType) params.append('propertyType', propertyType);
       if (listingType) params.append('listingType', listingType);
-      const response = await api.get(`/properties?${params}`);
+      const response = await apiRef.current.get(`/properties?${params}`);
       setProperties(response.data.data);
       setTotalPages(response.data.pagination?.pages || 1);
     } catch (error) {
@@ -31,7 +28,12 @@ export default function PropertyListing() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, listingType, propertyType, searchQuery]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => { fetchProperties(); }, 300);
+    return () => clearTimeout(timeout);
+  }, [fetchProperties]);
 
   return (
     <div className="min-h-screen bg-navy-50/40">
@@ -82,7 +84,7 @@ export default function PropertyListing() {
           ) : (
             <>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                {properties.map((property, index) => (
+                {properties.map((property) => (
                   <Link to={`/properties/${property.slug}`} key={property._id} className="group bg-white rounded-2xl border border-navy-100 overflow-hidden transition-all duration-300 hover:shadow-premium-hover hover:-translate-y-1">
                     <div className="relative overflow-hidden aspect-[4/3]">
                       {property.images?.[0] ? (
@@ -93,7 +95,7 @@ export default function PropertyListing() {
                         </div>
                       )}
                       <div className="absolute top-4 left-4 flex items-center gap-2">
-                        <span className="badge-navy bg-white/95 backdrop-blur-sm border-navy-200 capitalize">{property.listingType}</span>
+                        <span className="badge-navy-light capitalize">{property.listingType}</span>
                       </div>
                     </div>
                     <div className="p-6 lg:p-8">

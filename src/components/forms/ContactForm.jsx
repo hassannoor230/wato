@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import businessInfo from '../../data/businessInfo';
 import { validateInquiryForm } from '../../services/emailService';
 import api from '../../admin/context/AdminContext';
 
@@ -82,7 +81,7 @@ export default function ContactForm({
             setFormData({ ...initialFormState, subject: defaultSubject });
             setErrors({});
             setLastSubmittedAt(Date.now());
-        } catch (error) {
+        } catch {
             setStatus({
                 type: 'error',
                 message: 'Something went wrong. Please try again or contact us directly via WhatsApp.',

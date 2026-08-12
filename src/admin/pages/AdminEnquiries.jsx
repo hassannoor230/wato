@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '../context/AdminContext';
 
 const statusColors = {
@@ -12,6 +12,7 @@ const statusColors = {
 export default function AdminEnquiries() {
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedEnquiry, setSelectedEnquiry] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,10 +22,9 @@ export default function AdminEnquiries() {
 
   const { api } = useAdmin();
 
-  useEffect(() => { fetchEnquiries(); }, [api, searchQuery, statusFilter, currentPage]);
-
-  const fetchEnquiries = async () => {
+  const fetchEnquiries = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
       const params = new URLSearchParams({ page: currentPage, limit: 20 });
       if (searchQuery) params.append('search', searchQuery);
@@ -33,10 +33,13 @@ export default function AdminEnquiries() {
       setEnquiries(response.data.data);
     } catch (error) {
       console.error('Failed to fetch enquiries:', error);
+      setError('Failed to load enquiries. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [api, currentPage, searchQuery, statusFilter]);
+
+  useEffect(() => { fetchEnquiries(); }, [fetchEnquiries]);
 
   const openDetail = async (enquiry) => {
     setSelectedEnquiry(enquiry);
@@ -68,6 +71,11 @@ export default function AdminEnquiries() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+          {error}
+        </div>
+      )}
       <div>
         <p className="text-navy-500 text-sm font-medium">Manage customer enquiries</p>
       </div>

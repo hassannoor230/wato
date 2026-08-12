@@ -1,9 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
-import AdminLayout from './admin/components/AdminLayout';
 import AdminLogin from './admin/pages/AdminLogin';
 import AdminRoutes from './admin/components/AdminRoutes';
 import Dashboard from './admin/pages/Dashboard';
@@ -43,51 +42,91 @@ function PageLoader() {
   );
 }
 
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: (
+      <div className="min-h-screen">
+        <Header />
+        <main>
+          <Suspense fallback={<PageLoader />}>
+            <Hero />
+            <PropertySearch />
+            <Services />
+            <FeaturedProperties />
+            <About />
+            <WhyChooseUs />
+            <Stats />
+            <Testimonials />
+            <FAQ />
+            <Contact />
+          </Suspense>
+        </main>
+        <Footer />
+      </div>
+    ),
+  },
+  {
+    path: '/properties',
+    element: <PublicLayout><PropertyListing /></PublicLayout>,
+  },
+  {
+    path: '/properties/:slug',
+    element: <PublicLayout><PropertyDetail /></PublicLayout>,
+  },
+  {
+    path: '/services',
+    element: <PublicLayout><ServicesPage /></PublicLayout>,
+  },
+  {
+    path: '/gallery',
+    element: <PublicLayout><GalleryPage /></PublicLayout>,
+  },
+  {
+    path: '/about',
+    element: <PublicLayout><AboutPage /></PublicLayout>,
+  },
+  {
+    path: '/contact',
+    element: <PublicLayout><Contact /></PublicLayout>,
+  },
+  {
+    path: '/admin',
+    element: <AdminProvider><Outlet /></AdminProvider>,
+    children: [
+      { path: 'login', element: <AdminLogin /> },
+      {
+        element: <AdminRoutes />,
+        children: [
+          { index: true, element: <Dashboard /> },
+          { path: 'properties', element: <AdminProperties /> },
+          { path: 'services', element: <AdminServices /> },
+          { path: 'gallery', element: <AdminGallery /> },
+          { path: 'reviews', element: <AdminReviews /> },
+          { path: 'faqs', element: <AdminFAQs /> },
+          { path: 'enquiries', element: <AdminEnquiries /> },
+          { path: 'business-settings', element: <AdminBusinessSettings /> },
+          { path: 'website-settings', element: <AdminWebsiteSettings /> },
+        ],
+      },
+    ],
+  },
+  {
+    path: '*',
+    element: <PublicLayout><NotFound /></PublicLayout>,
+  },
+], {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+  },
+});
+
 function App() {
   return (
-    <Router>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/" element={
-            <div className="min-h-screen">
-              <Header />
-              <main>
-                <Hero />
-                <PropertySearch />
-                <Services />
-                <FeaturedProperties />
-                <About />
-                <WhyChooseUs />
-                <Stats />
-                <Testimonials />
-                <FAQ />
-                <Contact />
-              </main>
-              <Footer />
-            </div>
-          } />
-          <Route path="/properties" element={<PublicLayout><PropertyListing /></PublicLayout>} />
-          <Route path="/properties/:slug" element={<PublicLayout><PropertyDetail /></PublicLayout>} />
-          <Route path="/services" element={<PublicLayout><ServicesPage /></PublicLayout>} />
-          <Route path="/gallery" element={<PublicLayout><GalleryPage /></PublicLayout>} />
-          <Route path="/about" element={<PublicLayout><AboutPage /></PublicLayout>} />
-          <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
-
-          <Route path="/admin/login" element={<AdminProvider><AdminLogin /></AdminProvider>} />
-          <Route path="/admin" element={<AdminProvider><AdminRoutes><Dashboard /></AdminRoutes></AdminProvider>} />
-          <Route path="/admin/properties" element={<AdminProvider><AdminRoutes><AdminProperties /></AdminRoutes></AdminProvider>} />
-          <Route path="/admin/services" element={<AdminProvider><AdminRoutes><AdminServices /></AdminRoutes></AdminProvider>} />
-          <Route path="/admin/gallery" element={<AdminProvider><AdminRoutes><AdminGallery /></AdminRoutes></AdminProvider>} />
-          <Route path="/admin/reviews" element={<AdminProvider><AdminRoutes><AdminReviews /></AdminRoutes></AdminProvider>} />
-          <Route path="/admin/faqs" element={<AdminProvider><AdminRoutes><AdminFAQs /></AdminRoutes></AdminProvider>} />
-          <Route path="/admin/enquiries" element={<AdminProvider><AdminRoutes><AdminEnquiries /></AdminRoutes></AdminProvider>} />
-          <Route path="/admin/business-settings" element={<AdminProvider><AdminRoutes><AdminBusinessSettings /></AdminRoutes></AdminProvider>} />
-          <Route path="/admin/website-settings" element={<AdminProvider><AdminRoutes><AdminWebsiteSettings /></AdminRoutes></AdminProvider>} />
-
-          <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
-        </Routes>
-      </Suspense>
-    </Router>
+    <Suspense fallback={<PageLoader />}>
+      <RouterProvider router={router} />
+    </Suspense>
   );
 }
 

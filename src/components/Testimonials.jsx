@@ -25,7 +25,7 @@ export default function Testimonials() {
                   </svg>
                 ))}
               </div>
-              <p className="text-navy-600 mb-6 leading-relaxed italic">"{testimonial.text}"</p>
+              <p className="text-navy-600 mb-6 leading-relaxed italic">&ldquo;{testimonial.text}&rdquo;</p>
               <div className="flex items-center">
                 <div className="w-11 h-11 rounded-full bg-navy-100 flex items-center justify-center text-navy-700 font-bold text-sm mr-4">
                   {testimonial.name.split(' ').map(n => n[0]).join('')}

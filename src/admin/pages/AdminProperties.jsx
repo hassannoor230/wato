@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '../context/AdminContext';
 
 export default function AdminProperties() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState(null);
   const [formData, setFormData] = useState({
@@ -19,10 +20,9 @@ export default function AdminProperties() {
 
   const { api } = useAdmin();
 
-  useEffect(() => { fetchProperties(); }, [api, searchQuery, currentPage]);
-
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
       const params = new URLSearchParams({ page: currentPage, limit: 12 });
       if (searchQuery) params.append('search', searchQuery);
@@ -30,10 +30,13 @@ export default function AdminProperties() {
       setProperties(response.data.data);
     } catch (error) {
       console.error('Failed to fetch properties:', error);
+      setError('Failed to load properties. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [api, currentPage, searchQuery]);
+
+  useEffect(() => { fetchProperties(); }, [fetchProperties]);
 
   const openModal = (property = null) => {
     if (property) {
@@ -137,6 +140,11 @@ export default function AdminProperties() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+          {error}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <p className="text-navy-500 text-sm font-medium">Manage your property listings</p>
         <button onClick={() => openModal()} className="btn-primary text-sm px-6 py-2.5">+ Add Property</button>

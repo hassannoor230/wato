@@ -1,28 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '../context/AdminContext';
 
 export default function AdminFAQs() {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState(null);
   const [formData, setFormData] = useState({ question: '', answer: '', status: 'published', displayOrder: 0 });
 
   const { api } = useAdmin();
 
-  useEffect(() => { fetchFaqs(); }, [api]);
-
-  const fetchFaqs = async () => {
+  const fetchFaqs = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
       const response = await api.get('/faqs/admin');
       setFaqs(response.data.data);
     } catch (error) {
       console.error('Failed to fetch FAQs:', error);
+      setError('Failed to load FAQs. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [api]);
+
+  useEffect(() => { fetchFaqs(); }, [fetchFaqs]);
 
   const openModal = (faq = null) => {
     if (faq) {
@@ -64,6 +67,11 @@ export default function AdminFAQs() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+          {error}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <p className="text-navy-500 text-sm font-medium">Manage frequently asked questions</p>
         <button onClick={() => openModal()} className="btn-primary text-sm px-6 py-2.5">+ Add FAQ</button>

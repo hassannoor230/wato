@@ -46,7 +46,7 @@ export function AdminProvider({ children }) {
     if (token && adminData) {
       try {
         setAdmin(JSON.parse(adminData));
-      } catch (e) {
+      } catch {
         localStorage.removeItem('adminToken');
         localStorage.removeItem('adminData');
       }

@@ -62,7 +62,7 @@ export function validateInquiryForm(values = {}) {
 
     if (!phone) {
         errors.phone = 'Phone number is required.';
-    } else if (!/^(\+?[\d\s()\-]{7,20})$/.test(phone)) {
+    } else if (!/^(\+?[\d\s()-]{7,20})$/.test(phone)) {
         errors.phone = 'Please enter a valid phone number.';
     }
 
@@ -172,3 +172,5 @@ export default {
     buildUserReplyPayload,
     sendInquiry,
 };
+
+

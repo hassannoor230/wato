@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '../context/AdminContext';
 
 export default function AdminBusinessSettings() {
@@ -16,21 +16,21 @@ export default function AdminBusinessSettings() {
   const [saved, setSaved] = useState(false);
   const { api } = useAdmin();
 
-  useEffect(() => { fetchSettings(); }, [api]);
-
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     setLoading(true);
     try {
       const response = await api.get('/settings/business');
       if (response.data.data) {
-        setFormData({ ...formData, ...response.data.data });
+        setFormData(prev => ({ ...prev, ...response.data.data }));
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [api]);
+
+  useEffect(() => { fetchSettings(); }, [fetchSettings]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -123,9 +123,39 @@ export default function AdminBusinessSettings() {
             <div><label className="block text-sm font-semibold text-navy-700 mb-2">Google Maps URL</label><input type="url" value={formData.googleMapsUrl} onChange={(e) => setFormData({ ...formData, googleMapsUrl: e.target.value })} className="input-field" /></div>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-navy-100">
-            {saved && <span className="text-emerald-600 text-sm font-bold">Settings saved successfully!</span>}
-            <button type="submit" disabled={saving} className="btn-primary ml-auto">{saving ? 'Saving...' : 'Save Settings'}</button>
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-navy-100">
+            <div className="flex items-center gap-2">
+              {saved && (
+                <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Settings saved successfully!
+                </div>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-navy-900 text-white text-sm font-bold rounded-xl hover:bg-navy-800 focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              {saving ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Save Settings
+                </>
+              )}
+            </button>
           </div>
         </form>
       </div>
