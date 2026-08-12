@@ -15,6 +15,7 @@ export default function AdminProperties() {
     featured: false, availability: 'available', contactPhone: '', seoTitle: '', seoDescription: '',
   });
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -97,6 +98,7 @@ export default function AdminProperties() {
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
+    setUploadError('');
     try {
       const formDataUpload = new FormData();
       formDataUpload.append('image', file);
@@ -106,6 +108,8 @@ export default function AdminProperties() {
       const newImage = { url: response.data.data.url, publicId: response.data.data.publicId, caption: '' };
       setFormData({ ...formData, images: [...formData.images, newImage] });
     } catch (error) {
+      const msg = error.response?.data?.message || 'Failed to upload image. Please try again.';
+      setUploadError(msg);
       console.error('Failed to upload image:', error);
     } finally {
       setUploading(false);
